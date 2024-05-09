@@ -3,7 +3,9 @@ from Sensor_Fault_Detection.app_logging.app_logger import AppLogger
 from Sensor_Fault_Detection.entity.config_entity import DataIngestionConfig
 from Sensor_Fault_Detection.entity.artifact_entity import DataIngestionArtifact
 from Sensor_Fault_Detection.data_access.sensor_data import SensorData
-from Sensor_Fault_Detection.config.config import LOG_FILE, RANDOM_STATE
+import Sensor_Fault_Detection.utils.utils as utils
+from Sensor_Fault_Detection.config.config import LOG_FILE, RANDOM_STATE, PACKAGE_ROOT
+from Sensor_Fault_Detection.constants.traininig_constants import COLS_TO_DROP
 
 import logging
 
@@ -58,6 +60,9 @@ class DataIngestion:
     def initiate_data_ingestion(self) -> DataIngestionArtifact:
         try:
             df = self.export_data_into_featre_store()
+            schema = utils.read_yaml_file(os.path.join(PACKAGE_ROOT,'schema','schema.yaml'))
+            cols_to_drop = schema[COLS_TO_DROP]
+            df.drop(columns=cols_to_drop, axis=1, inplace=True)
             self.split_data_into_train_test(df)
             data_ingestion_artifact = DataIngestionArtifact(trained_file_path=self.data_ingestion_config.training_file_path,
                                                             test_file_path=self.data_ingestion_config.test_file_path)
