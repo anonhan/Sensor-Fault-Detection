@@ -1,13 +1,12 @@
-import sys
 import traceback2 as traceback
-import os
-
+import sys, os
 class SensorException(Exception):
     def __init__(self):
-        tb = traceback.extract_tb(sys.exc_info()[2])[-1]
-        self.line_no = tb[1]
-        self.file_name = os.path.basename(tb[0])
-        self.error_message = str(sys.exc_info()[1])
+        super().__init__()
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        self.line_no = exc_tb.tb_lineno
+        self.message = str(exc_obj)
+        self.filename = os.path.basename(exc_tb.tb_frame.f_code.co_filename)
 
     def __str__(self):
-        return f"Error in file [{self.file_name}], line no [{self.line_no}], Error [{self.error_message}]"
+        return f"\nError occured in [{self.filename}], at line no [{self.line_no}], error message [{self.message}]"

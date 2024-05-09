@@ -1,7 +1,7 @@
 import logging
 from Sensor_Fault_Detection.config.config import LOG_FILE
 
-class CustomLogger:
+class AppLogger:
     def __init__(self, file_object=None):
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.DEBUG)
