@@ -1,33 +1,40 @@
-from Sensor_Fault_Detection.entity.config_entity import TrainingPipelineConfig, DataIngestionConfig
-from Sensor_Fault_Detection.entity.artifact_entity import DataIngestionArtifact
+from Sensor_Fault_Detection.entity.config_entity import TrainingPipelineConfig, DataIngestionConfig, DataValidationConfig
+from Sensor_Fault_Detection.entity.artifact_entity import DataIngestionArtifact, DataValidationArtifact
 from Sensor_Fault_Detection.exceptions.exceptions import SensorException
 from Sensor_Fault_Detection.app_logging.app_logger import AppLogger
 from Sensor_Fault_Detection.components.data_ingestion import DataIngestion
-from Sensor_Fault_Detection.config.config import LOG_FILE
+from Sensor_Fault_Detection.components.data_validation import DataValidation
+from Sensor_Fault_Detection.config.config import TRAINING_LOG_FILE
 import sys, logging
-
-# exception = SensorException()
-logger = AppLogger(open(LOG_FILE,'a+'))
 
 class TrainingPipeline:
     def __init__(self):
         self.training_pipeline_config = TrainingPipelineConfig()
         self.data_ingestion_config = DataIngestionConfig(training_pipeline_config=self.training_pipeline_config)
-    
+        self.data_validation_config = DataValidationConfig(training_pipeline_config=self.training_pipeline_config)
+        self.logger = AppLogger(open(TRAINING_LOG_FILE,'a+'))
+
     def start_data_ingestion(self)->DataIngestionArtifact:
         try:
-            logger.log("Started data ingestion...")
+            self.logger.log("Started data ingestion...")
             data_ingestion_artifcat = DataIngestion(self.data_ingestion_config).initiate_data_ingestion()
-            logger.log('End of data ingestion')
+            self.logger.log('End of data ingestion')
             return data_ingestion_artifcat
         except Exception as e:
             exc = SensorException()
             self.logger.log(str(exc), logging.ERROR)
             raise SensorException()
 
-    def start_data_validation(self)->DataIngestionArtifact:
+    def start_data_validation(self, data_ingestion_artifact: DataIngestionArtifact)->DataIngestionArtifact:
         try:
-            pass
+            self.logger.log("Started data validation...")
+            data_validation = DataValidation(data_ingestion_artifact=data_ingestion_artifact,
+                                                      data_validation_config=self.data_validation_config)
+            data_validation_artifact = data_validation.initiate_data_validation()
+            
+            self.logger.log("End of data validation.")
+            return data_validation_artifact
+
         except Exception as e:
             exc = SensorException()
             self.logger.log(str(exc), logging.ERROR)
@@ -68,7 +75,8 @@ class TrainingPipeline:
     def run_pipeline(self):
         try:
             data_ingestion_artifact: DataIngestionArtifact = self.start_data_ingestion()
-            
+            data_validation_artifact: DataValidationArtifact = self.start_data_validation(data_ingestion_artifact=data_ingestion_artifact)
+
         except Exception as e: 
             exc = SensorException()
             self.logger.log(str(exc), logging.ERROR)

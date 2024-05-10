@@ -4,8 +4,8 @@ from Sensor_Fault_Detection.entity.config_entity import DataIngestionConfig
 from Sensor_Fault_Detection.entity.artifact_entity import DataIngestionArtifact
 from Sensor_Fault_Detection.data_access.sensor_data import SensorData
 import Sensor_Fault_Detection.utils.utils as utils
-from Sensor_Fault_Detection.config.config import LOG_FILE, RANDOM_STATE, PACKAGE_ROOT
-from Sensor_Fault_Detection.constants.traininig_constants import COLS_TO_DROP
+from Sensor_Fault_Detection.config.config import INGESTION_LOG_FILE, RANDOM_STATE, PACKAGE_ROOT
+from Sensor_Fault_Detection.constants.traininig_constants import COLS_TO_DROP, SCHEMA_FILE_PATH
 
 import logging
 
@@ -16,7 +16,7 @@ from sklearn.model_selection import train_test_split
 class DataIngestion:
     def __init__(self, data_ingestion_config:DataIngestionConfig):
         self.data_ingestion_config = data_ingestion_config
-        self.logger = AppLogger(file_object=open(LOG_FILE, 'a+'))
+        self.logger = AppLogger(file_object=open(INGESTION_LOG_FILE, 'a+'))
 
     def export_data_into_featre_store(self) -> DataFrame:
         '''
@@ -60,7 +60,7 @@ class DataIngestion:
     def initiate_data_ingestion(self) -> DataIngestionArtifact:
         try:
             df = self.export_data_into_featre_store()
-            schema = utils.read_yaml_file(os.path.join(PACKAGE_ROOT,'schema','schema.yaml'))
+            schema = utils.read_yaml_file(SCHEMA_FILE_PATH)
             cols_to_drop = schema[COLS_TO_DROP]
             df.drop(columns=cols_to_drop, axis=1, inplace=True)
             self.split_data_into_train_test(df)

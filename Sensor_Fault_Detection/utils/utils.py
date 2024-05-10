@@ -8,7 +8,27 @@ def read_yaml_file(file_path:str):
     """
     Function to read the YAML File.
     """
-    with open(file=file_path, mode='r') as f:
-        yaml_data = yaml.load(f, Loader=yaml.SafeLoader)
+    try:
+        with open(file=file_path, mode='r') as f:
+            yaml_data = yaml.load(f, Loader=yaml.SafeLoader)
 
-    return yaml_data
+        return yaml_data
+    except Exception as e:
+        exception = SensorException()
+        raise exception
+
+def write_yaml_file(file_path:str, content:object, replace=True):
+    """
+    Method to write the content in yaml file.
+    """
+    try:
+        if replace:
+            if os.path.exists(file_path):
+                    os.remove(file_path)
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        with open(file_path, 'w') as f:
+            yaml.dump(data=content,stream=f)
+
+    except Exception as e:
+        exception = SensorException()
+        raise exception

@@ -1,6 +1,4 @@
 import logging
-from Sensor_Fault_Detection.config.config import LOG_FILE
-
 class AppLogger:
     def __init__(self, file_object=None):
         self.logger = logging.getLogger(__name__)
@@ -32,10 +30,7 @@ class AppLogger:
             self.logger.info(message)
         elif level == logging.DEBUG:
             self.logger.debug(message)
+        elif level == logging.CRITICAL:
+            self.logger.critical(message)
         else:
             self.logger.info(message)
-
-# Example usage:
-# custom_logger = CustomLogger(file_object=open(LOG_FILE, "a+"))
-# custom_logger.log("This is an informational message", level=logging.INFO)
-# custom_logger.log("An error occurred!", level=logging.ERROR)

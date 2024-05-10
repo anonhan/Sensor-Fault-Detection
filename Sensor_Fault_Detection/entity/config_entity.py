@@ -17,3 +17,15 @@ class DataIngestionConfig:
         self.test_file_path: str = os.path.join(self.data_ingestion_dir, tc.DATA_INGESTION_INGESTED_DIR, tc.TEST_FILE_NAME)
         self.train_test_split_ratio: float = tc.DATA_INGESTION_TRAIN_TEST_SPLIT_RATIO
         self.collection_name: str = tc.DATA_INGESTION_COLLECTION_NAME
+
+class DataValidationConfig:
+    def __init__(self, training_pipeline_config:TrainingPipelineConfig):
+        self.data_validation_dir:str = os.path.join(training_pipeline_config.artifact_dir, tc.DATA_VALIDATION_DIR_NAME)
+        self.valid_data_file_path:str = os.path.join(self.data_validation_dir, tc.DATA_VALIDATION_VALID_DIR)
+        self.invalid_data_file_path: str = os.path.join(self.data_validation_dir, tc.DATA_VALIDATION_INVALID_DIR)
+        self.data_drift_file_path: str = os.path.join(self.data_validation_dir, tc.DATA_VALIDATION_DRIFT_DIR, tc.DATA_VALIDATION_DRIFT_REPORT_FILE_NAME)
+        # Train and Test of Valid and Invalid data
+        self.valid_train_dir: str = os.path.join(self.invalid_data_file_path, tc.TRAIN_FILE_NAME)
+        self.invalid_train_dir: str = os.path.join(self.invalid_data_file_path, tc.TRAIN_FILE_NAME)
+        self.valid_test_dir: str = os.path.join(self.valid_data_file_path, tc.TEST_FILE_NAME)
+        self.invalid_test_dir: str = os.path.join(self.invalid_data_file_path, tc.TEST_FILE_NAME)
