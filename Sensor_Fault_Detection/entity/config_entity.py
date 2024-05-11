@@ -25,7 +25,20 @@ class DataValidationConfig:
         self.invalid_data_file_path: str = os.path.join(self.data_validation_dir, tc.DATA_VALIDATION_INVALID_DIR)
         self.data_drift_file_path: str = os.path.join(self.data_validation_dir, tc.DATA_VALIDATION_DRIFT_DIR, tc.DATA_VALIDATION_DRIFT_REPORT_FILE_NAME)
         # Train and Test of Valid and Invalid data
-        self.valid_train_dir: str = os.path.join(self.invalid_data_file_path, tc.TRAIN_FILE_NAME)
+        self.valid_train_dir: str = os.path.join(self.valid_data_file_path, tc.TRAIN_FILE_NAME)
         self.invalid_train_dir: str = os.path.join(self.invalid_data_file_path, tc.TRAIN_FILE_NAME)
         self.valid_test_dir: str = os.path.join(self.valid_data_file_path, tc.TEST_FILE_NAME)
         self.invalid_test_dir: str = os.path.join(self.invalid_data_file_path, tc.TEST_FILE_NAME)
+
+class DataTransformationConig:
+    def __init__(self, training_pipeline_config:TrainingPipelineConfig):
+        self.data_transformation_dir:str = os.path.join(training_pipeline_config.artifact_dir, tc.DATA_TRANSFORMATION_DIR_NAME)
+        self.transformed_train_data_file: str = os.path.join(self.data_transformation_dir, 
+                                                             tc.DATA_TRANSFORMATION_TRANSFORMED_DATA_DIR,
+                                                             tc.TRAIN_FILE_NAME.replace('.csv', '.npy'))
+        self.transformed_test_data_file: str = os.path.join(self.data_transformation_dir,
+                                                            tc.DATA_TRANSFORMATION_TRANSFORMED_DATA_DIR,
+                                                            tc.TEST_FILE_NAME.replace('.csv', '.npy'))
+        self.transformed_object_file: str = os.path.join(self.data_transformation_dir,
+                                                         tc.DATA_TRANSFORMATION_TRANSFORMED_OBJECT_DIR,
+                                                         tc.PREPROCESSING_OBJECT_NAME)
