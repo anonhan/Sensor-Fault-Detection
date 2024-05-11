@@ -100,32 +100,51 @@ class DataValidation:
             # Reading train and test data
             train_set, test_set = self.read_data()
 
-            # Validating number of columns in 
+            # Vars to track status of data validation
             self.logger.log("Validating number of columns.")
             status_message = ""
+            train_invalid_problems = 0
+            test_invalid_problems = 0
+
+            # Validating number of columns in 
             status = self.validate_number_of_columns(train_set)
             if not status:
+                train_invalid_problems += 1
                 status_message = status_message+f"Error: the number of columns are different in Train Data.\n"
             status = self.validate_number_of_columns(test_set)
             if not status:
+                test_invalid_problems += 1
                 status_message = status_message + f"Error: the number of columns are different in Test Data.\n"
 
             # Validating numerical columns
             status = self.is_numerical_cols_exist(train_set)
             if not status:
+                train_invalid_problems += 1
                 status_message = status_message + f"Error: Some columns are missing in Train Data.\n"
             status = self.is_numerical_cols_exist(test_set)
             if not status:
+                test_invalid_problems += 1
                 status_message = status_message + f"Error: Some columns are missing in Test Data.\n"
 
-            if len(status_message)>0:
+            if (train_invalid_problems>0) or (test_invalid_problems>0):
                 self.logger.log(status_message, logging.CRITICAL)
                 raise status_message
+        
+            if train_invalid_problems>0:
+                utils.save_csv(self.data_validation_config.invalid_train_dir, train_set)
+            else:
+                utils.save_csv(self.data_validation_config.valid_train_dir, train_set)
             
+            if test_invalid_problems>0:
+                utils.save_csv(self.data_validation_config.invalid_test_dir, test_set)
+            else:
+                utils.save_csv(self.data_validation_config.valid_test_dir, test_set)
+
+
             # # Drop the columns with zero standard-deviation
             # train_set = self.drop_std_zero_columns(train_set)
             # test_set = self.drop_std_zero_columns(test_set)
-
+            
             # Detect the data drift
             status = self.detect_data_drift(train_set, test_set)
             if status:
