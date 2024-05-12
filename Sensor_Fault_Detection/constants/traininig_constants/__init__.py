@@ -40,3 +40,12 @@ Data Transformation related constant start with DATA_TRANSFORMATION VAR NAME
 DATA_TRANSFORMATION_DIR_NAME: str = 'data_transformation'
 DATA_TRANSFORMATION_TRANSFORMED_DATA_DIR: str = 'transformed'
 DATA_TRANSFORMATION_TRANSFORMED_OBJECT_DIR: str = 'transformed_object'
+
+"""
+Model Training related constant start with MODEL_TRAINING VAR NAME
+"""
+MODEL_TRAINING_DIR_NAME: str = 'model_training'
+MODEL_TRAINING_TRAINED_MODELS: str = 'trained_models'
+MODEL_TRAINING_EXPECTED_ACCURACY: float = 0.70
+MODEL_TRAINING_MODEL_NAME: str = 'model.pkl'
+MODEL_TRAINING_ROC_FIG_NAME: str = 'roc.png'

@@ -82,7 +82,7 @@ def save_csv(file_path, csv_object):
     
 def read_csv(file_path):
     try:
-        data = np.loadtxt(file_path, delimiter=',')
+        data = pd.read_csv(file_path)
         return data
     except Exception as e:
         exception = SensorException()

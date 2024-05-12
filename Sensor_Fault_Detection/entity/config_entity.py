@@ -42,3 +42,11 @@ class DataTransformationConig:
         self.transformed_object_file: str = os.path.join(self.data_transformation_dir,
                                                          tc.DATA_TRANSFORMATION_TRANSFORMED_OBJECT_DIR,
                                                          tc.PREPROCESSING_OBJECT_NAME)
+
+class ModelTrainingConfig:
+    def __init__(self, training_pipeline_config: TrainingPipelineConfig):
+        self.model_training_dir:str = os.path.join(training_pipeline_config.artifact_dir, tc.MODEL_TRAINING_DIR_NAME)
+        self.trained_models_file_path: str = os.path.join(self.model_training_dir, tc.MODEL_TRAINING_TRAINED_MODELS)
+        self.trained_model_name: str = os.path.join(self.trained_models_file_path, tc.MODEL_TRAINING_MODEL_NAME)
+        self.roc_curve_fig: str = os.path.join(self.trained_models_file_path, tc.MODEL_TRAINING_ROC_FIG_NAME)
+        self.expected_accuracy: float = tc.MODEL_TRAINING_EXPECTED_ACCURACY

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from matplotlib.figure import Figure
 
 @dataclass
 class DataIngestionArtifact:
@@ -19,3 +20,18 @@ class DataTransformationArtifact:
     transformed_object_file_path: str
     transformed_train_file_path: str
     transformed_test_file_path: str
+
+@dataclass
+class ModelTrainingArtifact:
+    model_training_dir: str
+    trained_models_dir: str
+    traned_model_name: str
+    expected_accuracy: str
+    metrics_artifact: str
+
+@dataclass
+class ModelEvalutationArtifact:
+    f1_score: float
+    precision: float
+    recall: float
+    roc_curve_fig: Figure

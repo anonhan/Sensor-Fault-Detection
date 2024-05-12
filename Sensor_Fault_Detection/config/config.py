@@ -10,6 +10,8 @@ os.makedirs(LOG_PATH, exist_ok=True)
 INGESTION_LOG_FILE = os.path.join(LOG_PATH, 'data_ingestion_logs.log')
 VALIDATION_LOG_FILE = os.path.join(LOG_PATH, 'data_validation_logs.log')
 TRANSFORMATION_LOG_FILE = os.path.join(LOG_PATH, 'data_transformation_logs.log')
+MODEL_TRAINING_LOG_FILE = os.path.join(LOG_PATH, 'model_training_logs.log')
+
 TRAINING_LOG_FILE = os.path.join(LOG_PATH, 'training_logs.log')
 
 

@@ -1,15 +1,18 @@
 from Sensor_Fault_Detection.entity.config_entity import (TrainingPipelineConfig, 
                                                          DataIngestionConfig, 
                                                          DataValidationConfig,
-                                                         DataTransformationConig)
+                                                         DataTransformationConig,
+                                                         ModelTrainingConfig)
 from Sensor_Fault_Detection.entity.artifact_entity import (DataIngestionArtifact, 
                                                            DataValidationArtifact,
-                                                           DataTransformationArtifact)
+                                                           DataTransformationArtifact,
+                                                           ModelTrainingArtifact)
 from Sensor_Fault_Detection.exceptions.exceptions import SensorException
 from Sensor_Fault_Detection.app_logging.app_logger import AppLogger
 from Sensor_Fault_Detection.components.data_ingestion import DataIngestion
 from Sensor_Fault_Detection.components.data_validation import DataValidation
 from Sensor_Fault_Detection.components.data_transformation import DataTransformation
+from Sensor_Fault_Detection.components.model_training import ModelTraining
 from Sensor_Fault_Detection.config.config import TRAINING_LOG_FILE
 import sys, logging
 
@@ -19,6 +22,7 @@ class TrainingPipeline:
         self.data_ingestion_config = DataIngestionConfig(training_pipeline_config=self.training_pipeline_config)
         self.data_validation_config = DataValidationConfig(training_pipeline_config=self.training_pipeline_config)
         self.data_transformation_config = DataTransformationConig(training_pipeline_config=self.training_pipeline_config)
+        self.model_training_config = ModelTrainingConfig(training_pipeline_config=self.training_pipeline_config)
         self.logger = AppLogger(open(TRAINING_LOG_FILE,'a+'))
 
     def start_data_ingestion(self)->DataIngestionArtifact:
@@ -59,9 +63,12 @@ class TrainingPipeline:
             self.logger.log(str(exc), logging.ERROR)
             raise SensorException()
         
-    def start_model_training(self)->DataIngestionArtifact:
+    def start_model_training(self, data_transformation_artifact)->DataIngestionArtifact:
         try:
-            pass
+            model_trainer = ModelTraining(data_transformation_artifact=data_transformation_artifact,
+                                          model_training_config=self.model_training_config)
+            model_trainer.initiate_model_training()
+
         except Exception as e:
             exc = SensorException()
             self.logger.log(str(exc), logging.ERROR)
@@ -88,6 +95,7 @@ class TrainingPipeline:
             data_ingestion_artifact: DataIngestionArtifact = self.start_data_ingestion()
             data_validation_artifact: DataValidationArtifact = self.start_data_validation(data_ingestion_artifact=data_ingestion_artifact)
             data_transformation_artifact: DataTransformationArtifact = self.start_data_transformation(data_validation_artifact=data_validation_artifact)
+            self.start_model_training(data_transformation_artifact=data_transformation_artifact)
 
         except Exception as e: 
             exc = SensorException()

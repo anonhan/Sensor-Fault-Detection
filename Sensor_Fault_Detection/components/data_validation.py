@@ -7,7 +7,7 @@ from Sensor_Fault_Detection.config.config import VALIDATION_LOG_FILE, RANDOM_STA
 from Sensor_Fault_Detection.constants.traininig_constants import SCHEMA_FILE_PATH
 
 from scipy.stats import ks_2samp
-import sys, os, logging, pandas as pd
+import sys, os, logging, pandas as pd, numpy as np
 class DataValidation:
     def __init__(self, data_ingestion_artifact:DataIngestionArtifact, data_validation_config:DataValidationConfig):
         self.data_ingestion_artifact = data_ingestion_artifact
@@ -56,21 +56,43 @@ class DataValidation:
             self.logger.log(str(exception), logging.ERROR)
             raise exception
     
-    def drop_std_zero_columns(self, dataframe:pd.DataFrame):
+    def drop_std_zero_columns(self, train_data: pd.DataFrame, test_data: pd.DataFrame):
         try:
-            df = dataframe.copy()
-            st_dev = df.std().to_dict()
-            st_dev_zero = [col for col,val in st_dev.items() if val==0]
-            if st_dev_zero:
-                df.drop(columns=st_dev_zero, axis=1, inplace=True)
-                self.logger.log(f"Dropped zero standard-deviation columns {st_dev_zero}.")
+            train_df = train_data.copy()
+            test_df = test_data.copy()
+            
+            # Select only numeric columns for both train and test sets
+            train_numeric_cols = train_df.select_dtypes(include=[np.number])
+            test_numeric_cols = test_df.select_dtypes(include=[np.number])
+
+            # Calculate standard deviation for numeric columns in both sets
+            train_st_dev = train_numeric_cols.std().to_dict()
+            test_st_dev = test_numeric_cols.std().to_dict()
+
+            train_constant_columns = [col for col in train_numeric_cols.columns if train_numeric_cols[col].nunique() == 1]
+            test_constant_columns = [col for col in test_numeric_cols.columns if test_numeric_cols[col].nunique() == 1]
+
+            # Find columns with zero standard deviation in both sets
+            all_st_dev_zero = list(set([col for col, val in train_st_dev.items() if val == 0] +
+                                       [col for col, val in test_st_dev.items() if val == 0]+
+                                       train_constant_columns + test_constant_columns))
+            # Drop zero standard deviation columns from both sets
+            train_df.drop(columns=all_st_dev_zero, axis=1, inplace=True)
+            test_df.drop(columns=all_st_dev_zero, axis=1, inplace=True)
+
+            # Logging
+            if all_st_dev_zero:
+                self.logger.log(f"Dropped zero standard-deviation columns from both train and test sets: {all_st_dev_zero}.")
             else:
-                self.logger.log('No columns to drop with zero standard-deviation.')
-            return df
+                self.logger.log('No columns to drop with zero standard-deviation in both train and test sets.')
+
+            return train_df, test_df
+
         except Exception as e:
             exception = SensorException()
             self.logger.log(str(exception), logging.ERROR)
             raise exception
+
 
 
     def detect_data_drift(self, base_df:pd.DataFrame, current_df:pd.DataFrame, threshold=0.05) -> bool:
@@ -141,8 +163,9 @@ class DataValidation:
                 utils.save_csv(self.data_validation_config.valid_test_dir, test_set)
 
 
-            # # Drop the columns with zero standard-deviation
-            # train_set = self.drop_std_zero_columns(train_set)
+            # Drop the columns with zero standard-deviation
+            train_set, test_set = self.drop_std_zero_columns(train_set, test_set)
+            self.logger.log(f"[{train_set.shape}], [{test_set.shape}]", logging.WARNING)
             # test_set = self.drop_std_zero_columns(test_set)
             
             # Detect the data drift
