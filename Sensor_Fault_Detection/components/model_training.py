@@ -4,15 +4,12 @@ import Sensor_Fault_Detection.utils.utils as utils
 from Sensor_Fault_Detection.entity.config_entity import ModelTrainingConfig
 from Sensor_Fault_Detection.entity.artifact_entity import ModelTrainingArtifact, DataTransformationArtifact
 from Sensor_Fault_Detection.ml.metric.evaluation_metric  import get_evaluation_metrics
+from Sensor_Fault_Detection.ml.model.estimator import SensorModel
 from Sensor_Fault_Detection.config.config import RANDOM_STATE, MODEL_TRAINING_LOG_FILE
 
-from sklearn.svm import SVC
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score
 from xgboost import XGBClassifier
 import matplotlib.pyplot as plt
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_curve, roc_auc_score
-# from sklearn.model_selection import cross_val_predict
+# from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_curve, roc_auc_score
 
 
 import os, logging, pandas as pd, numpy as np
@@ -35,38 +32,19 @@ class ModelTraining:
             self.logger.log(str(exception), logging.ERROR)
             raise exception
 
-    def select_best_model(self, x_train, y_train, x_test, y_test):
+    def train_model(self, x_train, y_train):
         try:
-            classifiers = {
-                'SVM': SVC(),
-                'Random Forest': RandomForestClassifier(n_estimators=100, random_state=RANDOM_STATE),
-                'XGBoost': XGBClassifier(use_label_encoder=False, n_estimators=100),
-                # 'Stacking Classifier': StackingClassifier(estimators=[])
-            }
-
-            # Train classifiers and evaluate accuracy
-            best_accuracy = 0
-            best_model = None
-
-            for name, clf in classifiers.items():
-                clf.fit(x_train, y_train)
-                y_pred = clf.predict(x_test)
-                accuracy = accuracy_score(y_test, y_pred)
-                print(f'{name} Accuracy: {accuracy}')
-                if accuracy > best_accuracy:
-                    best_accuracy = accuracy
-                    best_model = clf
-
-            self.logger.log(f"Best model is [{best_model}] :: accuracy is [{best_accuracy}]")
-
+            XGBoost = XGBClassifier(use_label_encoder=False, n_estimators=100)
+            XGBoost.fit(x_train, y_train)
+            return XGBoost
         except Exception as e:
             exception = SensorException()
             self.logger.log(str(exception), logging.ERROR)
             raise exception
 
-
     def initiate_model_training(self) -> ModelTrainingArtifact:
         try:
+            self.logger.log('Model Training Started')
             # Read the train and test data
             train_set, test_set = self.read_data()
             
@@ -74,8 +52,40 @@ class ModelTraining:
             x_train, y_train = train_set[:, :-1], train_set[:, -1]
             x_test, y_test = test_set[:, :-1], test_set[:, -1]
 
-            # Train the model
-            self.select_best_model(x_train, y_train, x_test, y_test)
+            # Train the model and get predictions
+            model = self.train_model(x_train, y_train)
+            # Train scores
+            y_preds_train = model.predict(x_train)
+            y_scores_train = model.predict_proba(x_train)[:, 1]
+            classification_report_train = get_evaluation_metrics(y_pred=y_preds_train, y_true=y_train, y_score=y_scores_train)
+
+            # Test scores
+            y_preds_test = model.predict(x_test)
+            y_scores_test = model.predict_proba(x_test)[:, 1]
+            classification_report_test = get_evaluation_metrics(y_pred=y_preds_test, y_true=y_test, y_score=y_scores_test)
+
+            # Determining the Model acceptance
+            if classification_report_test.f1_score <= self.model_training_config.expected_accuracy:
+                raise Exception("Model performance does not meet the set accuracy threshold.")
+
+            # Detecting Overfitting and Underfitting:
+            score_diff = abs(classification_report_test.f1_score - classification_report_train.f1_score)
+            if score_diff >= self.model_training_config.model_score_difference_threshold:
+                raise Exception("Model has high difference in scores (Overfitting or Underfitting detected)!")
+
+            # binding the preprocessor and model together
+            preprocessing_obj = utils.load_object(self.data_transformation_artifact.transformed_object_file_path)
+            encoder_obj = utils.load_object(self.data_transformation_artifact.label_encoder_object_file_path)
+            sensor_model = SensorModel(preprocessing_obj, encoder_obj, model)
+            # Saving the Model pipeline
+            utils.save_object(self.model_training_config.trained_model_name, sensor_model)
+
+            # Generating Model Trainer Artifact
+            model_artifact: ModelTrainingArtifact = ModelTrainingArtifact(self.model_training_config.trained_models_file_path,
+                                                                                  classification_report_train,
+                                                                                  classification_report_test)
+            self.logger.log(f"Model training completed: [{model_artifact.test_metric_artifact.f1_score, model_artifact.train_metric_artifact.f1_score}]")
+            return model_artifact
 
         except Exception:
             exception = SensorException()

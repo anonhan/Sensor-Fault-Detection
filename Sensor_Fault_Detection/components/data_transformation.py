@@ -41,7 +41,9 @@ class DataTransformation:
             y_test_encoded = encoder.transform(y_test)
             # Get the mapping of original labels to encoded values
             label_mapping = dict(zip(encoder.classes_, encoder.transform(encoder.classes_)))
-            
+
+            utils.save_object(file_path=self.data_transformation_config.label_enocder_object_file, pkl_object=encoder)
+
             self.logger.log(f"Label encoding completed: {label_mapping}")
             return y_train_encoded, y_test_encoded
         except Exception as e:
@@ -101,7 +103,8 @@ class DataTransformation:
             data_transformation_artifact = DataTransformationArtifact(
                 transformed_object_file_path=self.data_transformation_config.transformed_object_file,
                 transformed_train_file_path=self.data_transformation_config.transformed_train_data_file,
-                transformed_test_file_path=self.data_transformation_config.transformed_test_data_file
+                transformed_test_file_path=self.data_transformation_config.transformed_test_data_file,
+                label_encoder_object_file_path=self.data_transformation_config.label_enocder_object_file
             )
             self.logger.log("Data transformation completed.")
             return data_transformation_artifact

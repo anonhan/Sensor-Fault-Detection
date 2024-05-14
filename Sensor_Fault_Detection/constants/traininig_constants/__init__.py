@@ -3,6 +3,7 @@ from Sensor_Fault_Detection.config.config import PACKAGE_ROOT
 
 TRAINED_MODELS_DIR = os.path.join(PACKAGE_ROOT,'Trained_Models')
 
+SAVED_MODELS_DIR = os.path.join('saved_models')
 TARGET_COLUMN: str = 'class'
 PIPELINE_NAME: str = 'sensor'
 ARTIFACT_DIR: str = 'artifacts'
@@ -12,6 +13,7 @@ TRAIN_FILE_NAME: str = 'train.csv'
 TEST_FILE_NAME: str = 'test.csv'
 
 PREPROCESSING_OBJECT_NAME: str = 'preprocessing.pkl'
+LABEL_ENCODER_OBJECT_NAME: str = 'encoder.pkl'
 MODEL_FILE_NAME: str = 'model.pkl'
 SCHEMA_FILE_PATH: str = os.path.join(PACKAGE_ROOT, 'schema','schema.yaml')
 COLS_TO_DROP = 'drop_columns'
@@ -46,6 +48,19 @@ Model Training related constant start with MODEL_TRAINING VAR NAME
 """
 MODEL_TRAINING_DIR_NAME: str = 'model_training'
 MODEL_TRAINING_TRAINED_MODELS: str = 'trained_models'
-MODEL_TRAINING_EXPECTED_ACCURACY: float = 0.70
+MODEL_TRAINING_EXPECTED_ACCURACY: float = 0.90
+MODEL_TRAINING_ACCEPTED_ACCURACY_DIFFERENCE: float = 0.03 
 MODEL_TRAINING_MODEL_NAME: str = 'model.pkl'
 MODEL_TRAINING_ROC_FIG_NAME: str = 'roc.png'
+
+
+"""
+Model Evaluation Metrics constant start with MODEL_EVALUATION VAR NAME
+"""
+MODEL_EVALUATION_DIR_NAME: str = "model_evaluation"
+MODEL_EVALUATION_REPORT_FILE: str = "evaluation_report.yaml"
+MODEL_EVALUATION_ACCURACY_CHANGED_THRESHOLD: float = 0.1
+
+
+MODEL_PUSHER_DIR_NAME = "model_pusher"
+MODEL_PUSHER_SAVED_MODEL_DIR = SAVED_MODELS_DIR

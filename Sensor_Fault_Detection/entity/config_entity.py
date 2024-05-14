@@ -42,6 +42,9 @@ class DataTransformationConig:
         self.transformed_object_file: str = os.path.join(self.data_transformation_dir,
                                                          tc.DATA_TRANSFORMATION_TRANSFORMED_OBJECT_DIR,
                                                          tc.PREPROCESSING_OBJECT_NAME)
+        self.label_enocder_object_file: str = os.path.join(self.data_transformation_dir,
+                                                         tc.DATA_TRANSFORMATION_TRANSFORMED_OBJECT_DIR,
+                                                         tc.LABEL_ENCODER_OBJECT_NAME)
 
 class ModelTrainingConfig:
     def __init__(self, training_pipeline_config: TrainingPipelineConfig):
@@ -50,3 +53,21 @@ class ModelTrainingConfig:
         self.trained_model_name: str = os.path.join(self.trained_models_file_path, tc.MODEL_TRAINING_MODEL_NAME)
         self.roc_curve_fig: str = os.path.join(self.trained_models_file_path, tc.MODEL_TRAINING_ROC_FIG_NAME)
         self.expected_accuracy: float = tc.MODEL_TRAINING_EXPECTED_ACCURACY
+        self.model_score_difference_threshold: float = tc.MODEL_TRAINING_ACCEPTED_ACCURACY_DIFFERENCE
+
+class ModelEvaluationConfig:
+    def __init__(self, training_pipeline_config: TrainingPipelineConfig):
+        self.model_evaluation_dir:str = os.path.join(training_pipeline_config.artifact_dir, tc.MODEL_EVALUATION_DIR_NAME)
+        self.evaluation_report:str = os.path.join(self.model_evaluation_dir, tc.MODEL_EVALUATION_REPORT_FILE)
+        self.model_accuracy_changed_threshold:float = tc.MODEL_EVALUATION_ACCURACY_CHANGED_THRESHOLD
+
+class ModelPusherConfig:
+
+    def __init__(self,training_pipeline_config:TrainingPipelineConfig):
+        self.model_evaluation_dir: str = os.path.join(training_pipeline_config.artifact_dir, tc.MODEL_PUSHER_DIR_NAME)
+        self.model_file_path = os.path.join(self.model_evaluation_dir, tc.SAVED_MODELS_DIR)
+        timestamp = round(datetime.now().timestamp())
+        self.saved_model_path=os.path.join(
+                                    tc.SAVED_MODELS_DIR,
+                                    f"{timestamp}"
+                                    )

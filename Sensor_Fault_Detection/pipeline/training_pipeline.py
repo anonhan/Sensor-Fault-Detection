@@ -2,17 +2,24 @@ from Sensor_Fault_Detection.entity.config_entity import (TrainingPipelineConfig,
                                                          DataIngestionConfig, 
                                                          DataValidationConfig,
                                                          DataTransformationConig,
-                                                         ModelTrainingConfig)
+                                                         ModelTrainingConfig,
+                                                         ModelEvaluationConfig,
+                                                         ModelPusherConfig)
 from Sensor_Fault_Detection.entity.artifact_entity import (DataIngestionArtifact, 
                                                            DataValidationArtifact,
                                                            DataTransformationArtifact,
-                                                           ModelTrainingArtifact)
+                                                           ModelTrainingArtifact,
+                                                           ModelEvaluationArtifact,
+                                                           ModelMetricsArtifact,
+                                                           ModelPusherArtifact)
 from Sensor_Fault_Detection.exceptions.exceptions import SensorException
 from Sensor_Fault_Detection.app_logging.app_logger import AppLogger
 from Sensor_Fault_Detection.components.data_ingestion import DataIngestion
 from Sensor_Fault_Detection.components.data_validation import DataValidation
 from Sensor_Fault_Detection.components.data_transformation import DataTransformation
 from Sensor_Fault_Detection.components.model_training import ModelTraining
+from Sensor_Fault_Detection.components.model_evaluation import ModelEvaluation
+from Sensor_Fault_Detection.components.model_pusher import ModelPusher
 from Sensor_Fault_Detection.config.config import TRAINING_LOG_FILE
 import sys, logging
 
@@ -23,6 +30,9 @@ class TrainingPipeline:
         self.data_validation_config = DataValidationConfig(training_pipeline_config=self.training_pipeline_config)
         self.data_transformation_config = DataTransformationConig(training_pipeline_config=self.training_pipeline_config)
         self.model_training_config = ModelTrainingConfig(training_pipeline_config=self.training_pipeline_config)
+        self.model_evaluation_config = ModelEvaluationConfig(training_pipeline_config=self.training_pipeline_config)
+        self.model_pusher_config = ModelPusherConfig(training_pipeline_config=self.training_pipeline_config)
+
         self.logger = AppLogger(open(TRAINING_LOG_FILE,'a+'))
 
     def start_data_ingestion(self)->DataIngestionArtifact:
@@ -53,9 +63,11 @@ class TrainingPipeline:
 
     def start_data_transformation(self, data_validation_artifact: DataValidationArtifact)->DataTransformationArtifact:
         try:
+            self.logger.log("Started data transformation.")
             data_transformation = DataTransformation(data_validation_artifact=data_validation_artifact,
                                                      data_transformation_config=self.data_transformation_config)
             data_transformation_artifact = data_transformation.initiate_data_transformation()
+            self.logger.log("Data transformation completed.")
             return data_transformation_artifact
 
         except Exception as e:
@@ -63,28 +75,42 @@ class TrainingPipeline:
             self.logger.log(str(exc), logging.ERROR)
             raise SensorException()
         
-    def start_model_training(self, data_transformation_artifact)->DataIngestionArtifact:
+    def start_model_training(self, data_transformation_artifact)->ModelTrainingArtifact:
         try:
+            self.logger.log('Started model training.')
             model_trainer = ModelTraining(data_transformation_artifact=data_transformation_artifact,
                                           model_training_config=self.model_training_config)
-            model_trainer.initiate_model_training()
+            model_training_artifact = model_trainer.initiate_model_training()
+            self.logger.log('Model training completed.')
+            return model_training_artifact
 
         except Exception as e:
             exc = SensorException()
             self.logger.log(str(exc), logging.ERROR)
             raise SensorException()
 
-    def start_model_evaluation(self)->DataIngestionArtifact:
+    def start_model_evaluation(self, model_training_artifact, data_validation_artifact)->DataIngestionArtifact:
         try:
-            pass
+            self.logger.log("Started Model evaluator.")
+            model_evaluator = ModelEvaluation(model_training_artifact=model_training_artifact,
+                                              data_validation_artifact=data_validation_artifact,
+                                              model_evaluation_config=self.model_evaluation_config)
+            model_evaluation_artifact = model_evaluator.initiate_model_evaluaton()
+            self.logger.log('Model evaluation completed.')
+            return model_evaluation_artifact
         except Exception as e:
             exc = SensorException()
             self.logger.log(str(exc), logging.ERROR)
             raise SensorException()
     
-    def start_model_pushing(self)->DataIngestionArtifact:
+    def start_model_pushing(self, model_eval_artifact)->DataIngestionArtifact:
         try:
-            pass
+            self.logger.log("Started model pusher.")
+            model_pusher_artifact = ModelPusher(model_pusher_config=self.model_pusher_config,
+                                                model_eval_artifact=model_eval_artifact)
+            model_pusher_artifact = model_pusher_artifact.initiate_model_pusher()
+            self.logger.log('Pushed model.')
+            return model_pusher_artifact
         except Exception as e:
             exc = SensorException()
             self.logger.log(str(exc), logging.ERROR)
@@ -95,7 +121,13 @@ class TrainingPipeline:
             data_ingestion_artifact: DataIngestionArtifact = self.start_data_ingestion()
             data_validation_artifact: DataValidationArtifact = self.start_data_validation(data_ingestion_artifact=data_ingestion_artifact)
             data_transformation_artifact: DataTransformationArtifact = self.start_data_transformation(data_validation_artifact=data_validation_artifact)
-            self.start_model_training(data_transformation_artifact=data_transformation_artifact)
+            model_trainer_artifact: ModelTrainingArtifact = self.start_model_training(data_transformation_artifact=data_transformation_artifact)
+            model_evaluation_artifact: ModelEvaluationArtifact = self.start_model_evaluation(model_training_artifact=model_trainer_artifact,
+                                                                                             data_validation_artifact=data_validation_artifact)
+            if not model_evaluation_artifact.is_model_accepted:
+                raise Exception("Trained model is not better than the best model")
+            model_pusher_artifact: ModelPusherArtifact = self.start_model_pushing(model_eval_artifact=model_evaluation_artifact)
+
 
         except Exception as e: 
             exc = SensorException()

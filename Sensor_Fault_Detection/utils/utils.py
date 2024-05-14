@@ -66,7 +66,8 @@ def load_numpy_array(file_path):
 def load_object(file_path):
     try:
         with open(file=file_path, mode='rb') as f:
-            pkl = dill.loads(file=file_path)       
+            print('--------------->',file_path)
+            pkl = dill.loads(str=f.read())       
         return pkl
     except Exception as e:
         exception = SensorException()

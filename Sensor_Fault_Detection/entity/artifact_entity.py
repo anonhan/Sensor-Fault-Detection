@@ -18,20 +18,33 @@ class DataValidationArtifact:
 @dataclass
 class DataTransformationArtifact:
     transformed_object_file_path: str
+    label_encoder_object_file_path: str
     transformed_train_file_path: str
     transformed_test_file_path: str
 
 @dataclass
-class ModelTrainingArtifact:
-    model_training_dir: str
-    trained_models_dir: str
-    traned_model_name: str
-    expected_accuracy: str
-    metrics_artifact: str
-
-@dataclass
-class ModelEvalutationArtifact:
+class ModelMetricsArtifact:
     f1_score: float
     precision: float
     recall: float
     roc_curve_fig: Figure
+
+@dataclass
+class ModelTrainingArtifact:
+    trained_model_file_path: str
+    train_metric_artifact: ModelMetricsArtifact
+    test_metric_artifact: ModelMetricsArtifact
+
+@dataclass
+class ModelEvaluationArtifact:
+    trained_model_path: str
+    best_model_path: str
+    is_model_accepted: bool
+    improved_accuracy: float
+    train_model_metric_artifact: ModelMetricsArtifact
+    best_model_metric_artifact: ModelMetricsArtifact
+
+@dataclass
+class ModelPusherArtifact:
+    saved_model_path:str
+    model_file_path:str
