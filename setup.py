@@ -5,11 +5,12 @@ def list_requirements()->List[str]:
     """
     This function reads the requirements.txt and prepares a list of all requirements and returns it.
     """
-    list_reqs = []
-    with open(file="requirements.txt",mode='r') as f:
-        f = f.readlines()
-        list_reqs = [i.strip() for i in f]
-    return list_reqs
+    requirement_list:List[str] = []
+
+    """
+    Write a code to read requirements.txt file and append each requirements in requirement_list variable.
+    """
+    return requirement_list
 
 setup(
     name="Sensor_Fault_Detection",
@@ -19,4 +20,3 @@ setup(
     packages=find_packages(),
     install_requires=list_requirements()
 )
-# print(list_requirements())
