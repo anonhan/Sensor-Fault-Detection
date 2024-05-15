@@ -26,7 +26,7 @@ jobs:
         run: echo "Running unit tests"
 
       - name: Credentials Check
-        run: echo "${{ secrets.AWS_ACCESS_KEY_ID }}"
+        run: echo "AWS Access Key ID $AWS_ACCESS_KEY_ID"
 
   build-and-push-ecr-image:
     name: Continuous Delivery
