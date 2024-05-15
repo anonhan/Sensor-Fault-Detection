@@ -25,8 +25,9 @@ async def train_model():
         if train_pipeline.is_pipeline_running:
             Response("Training Pipeline is already running, Please try in sometime!!")
         else:
-            return Response("Started running the Training Pipeline")
+            Response("Started running the Training Pipeline")
             train_pipeline.run_pipeline()
+            Response("Training completed")
     except Exception as e:
         return Response("Error occured: \n"+str(e))
 
