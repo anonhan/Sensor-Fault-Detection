@@ -25,6 +25,10 @@ jobs:
       - name: Run unit tests
         run: echo "Running unit tests"
 
+      - name: Credentials Check
+        run: echo ${{ secrets.AWS_ACCESS_KEY_ID }}
+        run: echo ${{ secrets.AWS_REGION }}
+
   build-and-push-ecr-image:
     name: Continuous Delivery
     needs: integration
