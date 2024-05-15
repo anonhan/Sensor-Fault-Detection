@@ -68,7 +68,7 @@ jobs:
           
   Continuous-Deployment:
     needs: build-and-push-ecr-image
-    runs-on: ip-172-31-47-250
+    runs-on: "ip-172-31-47-250"
     steps:
       - name: Checkout
         uses: actions/checkout@v3
