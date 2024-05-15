@@ -31,6 +31,12 @@ class SensorModel:
         except Exception:
             raise SensorException()
 
+    def inverse_transform(self, y):
+        try:
+            y_actual = self.encoder.inverse_transform(y)
+            return y_actual
+        except Exception:
+            raise SensorException()
     
 class ModelResolver:
     def __init__(self, models_dir=SAVED_MODELS_DIR):
