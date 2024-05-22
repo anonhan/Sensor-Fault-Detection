@@ -128,7 +128,7 @@ class DataValidation:
             train_invalid_problems = 0
             test_invalid_problems = 0
 
-            # Validating number of columns in 
+            # Validating number of columns
             status = self.validate_number_of_columns(train_set)
             if not status:
                 train_invalid_problems += 1
