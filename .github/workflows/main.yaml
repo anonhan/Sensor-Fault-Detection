@@ -6,7 +6,7 @@ on:
       - main
     paths-ignore:
       - 'README.md'
-      
+
 permissions:
   id-token: write
   contents: read
@@ -58,7 +58,7 @@ jobs:
           ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_NAME }}
           IMAGE_TAG: latest
         run: |
-          echo "Building Image"
+          echo "Building Image $ECR_REGISTRY  $ECR_REPOSITORY"
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           echo "Pushing Image"
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
