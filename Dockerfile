@@ -6,4 +6,4 @@ WORKDIR /app
 COPY . /app
 RUN pip install -r requirements.txt
 
-CMD ["python3", "Sensor_Fault_Detection/main.py"]
+CMD ["python3", "Sensor_Fault_Detection/main.py"] 
